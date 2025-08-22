@@ -1,0 +1,21 @@
+<% layout('layout') -%>
+<h1>Edit Property</h1>
+<form method="POST" action="/properties/<%= property._id %>?_method=PUT">
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input type="text" name="property[title]" value="<%= property.title %>" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="property[description]" class="form-control"><%= property.description %></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Location</label>
+    <input type="text" name="property[location]" value="<%= property.location %>" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Price</label>
+    <input type="number" name="property[price]" value="<%= property.price %>" class="form-control">
+  </div>
+  <button class="btn btn-primary" type="submit">Update</button>
+</form>

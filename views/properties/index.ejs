@@ -1,0 +1,15 @@
+<% layout('layout') -%>
+<h1>All Properties</h1>
+<a href="/properties/new" class="btn btn-success mb-3">Add Property</a>
+<div class="row">
+  <% properties.forEach(p => { %>
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title"><a href="/properties/<%= p._id %>"><%= p.title %></a></h5>
+          <p class="card-text"><%= p.location %></p>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>

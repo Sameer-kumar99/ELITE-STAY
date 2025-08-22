@@ -1,0 +1,22 @@
+<% layout('layout') -%>
+<h1>My Bookings</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Check In</th>
+      <th>Check Out</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% bookings.forEach(b => { %>
+      <tr>
+        <td><%= b.propertyId.title %></td>
+        <td><%= b.checkInDate.toDateString() %></td>
+        <td><%= b.checkOutDate.toDateString() %></td>
+        <td><%= b.status %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

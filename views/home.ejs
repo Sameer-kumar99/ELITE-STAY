@@ -1,0 +1,18 @@
+<% layout('layout') -%>
+<h1>Featured Properties</h1>
+<div class="row">
+  <% properties.forEach(p => { %>
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <% if (p.images && p.images.length) { %>
+          <img src="<%= p.images[0] %>" class="card-img-top" alt="...">
+        <% } %>
+        <div class="card-body">
+          <h5 class="card-title"><%= p.title %></h5>
+          <p class="card-text"><%= p.location %></p>
+          <a href="/properties/<%= p._id %>" class="btn btn-primary">View</a>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>

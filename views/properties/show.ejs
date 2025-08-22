@@ -1,0 +1,20 @@
+<% layout('layout') -%>
+<h1><%= property.title %></h1>
+<p><%= property.description %></p>
+<p><strong>Location:</strong> <%= property.location %></p>
+<p><strong>Price:</strong> $<%= property.price %></p>
+<form method="POST" action="/bookings/<%= property._id %>">
+  <div class="row mb-3">
+    <div class="col">
+      <input type="date" name="checkInDate" class="form-control">
+    </div>
+    <div class="col">
+      <input type="date" name="checkOutDate" class="form-control">
+    </div>
+  </div>
+  <button class="btn btn-primary">Book Now</button>
+</form>
+<a href="/properties/<%= property._id %>/edit" class="btn btn-secondary mt-3">Edit</a>
+<form method="POST" action="/properties/<%= property._id %>?_method=DELETE" class="d-inline">
+  <button class="btn btn-danger">Delete</button>
+</form>
