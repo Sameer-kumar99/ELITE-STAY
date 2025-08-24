@@ -1,21 +1,479 @@
-<% layout('layout') -%>
-<h1>Edit Property</h1>
-<form method="POST" action="/properties/<%= property._id %>?_method=PUT">
-  <div class="mb-3">
-    <label class="form-label">Title</label>
-    <input type="text" name="property[title]" value="<%= property.title %>" class="form-control">
+
+
+<div class="row justify-content-center">
+  <div class="col-lg-8 col-md-10">
+    <div class="edit-container">
+      <div class="text-center mb-5">
+        <div class="edit-icon mb-3">
+          <i class="fas fa-edit fa-4x text-warning"></i>
+        </div>
+        <h1 class="edit-title">Edit Property</h1>
+        <p class="text-muted">Update your property information</p>
+      </div>
+      
+      <div class="card edit-card">
+        <div class="card-body p-4">
+          <form method="POST" action="/properties/<%= property._id %>?_method=PUT" class="edit-form">
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="form-floating">
+                  <input type="text" name="property[title]" class="form-control" id="title" 
+                         placeholder="Property Title" value="<%= property.title %>" required maxlength="100">
+                  <label for="title">
+                    <i class="fas fa-home me-2"></i>Property Title
+                  </label>
+                  <div class="form-text">Choose a catchy title that describes your property</div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" name="property[location]" class="form-control" id="location" 
+                         placeholder="Location" value="<%= property.location %>" required maxlength="100">
+                  <label for="location">
+                    <i class="fas fa-map-marker-alt me-2"></i>Location
+                  </label>
+                  <div class="form-text">City, State or full address</div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="number" name="property[price]" class="form-control" id="price" 
+                         placeholder="Price per night" value="<%= property.price %>" required min="1" step="0.01">
+                  <label for="price">
+                    <i class="fas fa-dollar-sign me-2"></i>Price per Night ($)
+                  </label>
+                  <div class="form-text">Set your nightly rate</div>
+                </div>
+              </div>
+              
+              <div class="col-12">
+                <div class="form-floating">
+                  <textarea name="property[description]" class="form-control description-textarea" 
+                            id="description" placeholder="Description" maxlength="1000"><%= property.description %></textarea>
+                  <label for="description">
+                    <i class="fas fa-align-left me-2"></i>Property Description
+                  </label>
+                  <div class="form-text">
+                    <span id="charCount"><%= property.description ? property.description.length : 0 %></span>/1000 characters. 
+                    Describe your property's features, amenities, and what makes it special.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-12">
+                <div class="property-features">
+                  <label class="form-label fw-semibold mb-3">
+                    <i class="fas fa-star me-2"></i>Property Features (Optional)
+                  </label>
+                  <div class="row g-3">
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="wifi">
+                        <label class="form-check-label" for="wifi">
+                          <i class="fas fa-wifi me-2"></i>Free WiFi
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="parking">
+                        <label class="form-check-label" for="parking">
+                          <i class="fas fa-parking me-2"></i>Parking
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="pool">
+                        <label class="form-check-label" for="pool">
+                          <i class="fas fa-swimmer me-2"></i>Pool
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="gym">
+                        <label class="form-check-label" for="gym">
+                          <i class="fas fa-dumbbell me-2"></i>Fitness Center
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="petFriendly">
+                        <label class="form-check-label" for="petFriendly">
+                          <i class="fas fa-paw me-2"></i>Pet Friendly
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                      <div class="form-check feature-check">
+                        <input class="form-check-input" type="checkbox" id="aircon">
+                        <label class="form-check-label" for="aircon">
+                          <i class="fas fa-snowflake me-2"></i>Air Conditioning
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions mt-5">
+              <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <button type="submit" class="btn btn-warning btn-update">
+                  <i class="fas fa-save me-2"></i>Update Property
+                </button>
+                <a href="/properties/<%= property._id %>" class="btn btn-outline-secondary btn-cancel">
+                  <i class="fas fa-arrow-left me-2"></i>Cancel
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="property-preview mt-4">
+        <div class="card preview-card">
+          <div class="card-header">
+            <h6 class="mb-0">
+              <i class="fas fa-eye me-2"></i>Property Preview
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="preview-content">
+              <h5 class="preview-title" id="previewTitle"><%= property.title %></h5>
+              <p class="preview-location">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                <span id="previewLocation"><%= property.location %></span>
+              </p>
+              <div class="preview-price mb-3">
+                $<span id="previewPrice"><%= property.price %></span> / night
+              </div>
+              <p class="preview-description" id="previewDescription">
+                <%= property.description %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="edit-tips mt-4">
+        <div class="card tips-card">
+          <div class="card-body">
+            <h6 class="card-title">
+              <i class="fas fa-lightbulb text-warning me-2"></i>Editing Tips
+            </h6>
+            <ul class="tips-list mb-0">
+              <li>Keep your title descriptive and appealing to attract guests</li>
+              <li>Update pricing based on seasonal demand and local market rates</li>
+              <li>Refresh your description to highlight new amenities or improvements</li>
+              <li>Consider adding features that guests frequently request</li>
+              <li>Review and update location details if necessary</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Description</label>
-    <textarea name="property[description]" class="form-control"><%= property.description %></textarea>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Location</label>
-    <input type="text" name="property[location]" value="<%= property.location %>" class="form-control">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Price</label>
-    <input type="number" name="property[price]" value="<%= property.price %>" class="form-control">
-  </div>
-  <button class="btn btn-primary" type="submit">Update</button>
-</form>
+</div>
+
+<style>
+  .edit-container {
+    padding: 2rem 0;
+  }
+  
+  .edit-icon {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 133, 27, 0.1) 100%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  
+  .edit-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffc107 0%, #ff851b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  
+  .edit-card {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(15px);
+    border: none;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+  
+  .form-floating > .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 1rem 0.75rem;
+    height: calc(3.5rem + 2px);
+    background: rgba(248,249,250,0.8);
+    transition: all 0.3s ease;
+  }
+  
+  .form-floating > .form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    background: rgba(255,255,255,0.95);
+  }
+  
+  .description-textarea {
+    height: 120px !important;
+    resize: vertical;
+  }
+  
+  .form-floating > label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  .form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  .property-features {
+    background: rgba(248,249,250,0.6);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .feature-check {
+    background: rgba(255,255,255,0.8);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+  
+  .feature-check:hover {
+    background: rgba(255, 193, 7, 0.05);
+    border-color: #ffc107;
+    transform: translateY(-1px);
+  }
+  
+  .feature-check .form-check-input:checked {
+    background-color: #ffc107;
+    border-color: #ffc107;
+  }
+  
+  .feature-check .form-check-input:checked ~ .form-check-label {
+    color: #ffc107;
+    font-weight: 600;
+  }
+  
+  .form-check-label {
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+  }
+  
+  .btn-update {
+    background: linear-gradient(135deg, #ffc107 0%, #ff851b 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 12px 30px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    min-width: 180px;
+    color: #212529;
+  }
+  
+  .btn-update:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+    color: #212529;
+  }
+  
+  .btn-cancel {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    border-radius: 15px;
+    padding: 12px 30px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 180px;
+  }
+  
+  .btn-cancel:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .preview-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  }
+  
+  .preview-card .card-header {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 133, 27, 0.1) 100%);
+    border: none;
+    border-radius: 20px 20px 0 0;
+    padding: 1rem 1.5rem;
+  }
+  
+  .preview-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .preview-location {
+    color: #6c757d;
+    margin-bottom: 1rem;
+  }
+  
+  .preview-price {
+    background: rgba(255, 193, 7, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffc107;
+    text-align: center;
+  }
+  
+  .preview-description {
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+  
+  .tips-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  }
+  
+  .tips-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .tips-list li {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+    color: #495057;
+    font-weight: 500;
+  }
+  
+  .tips-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #ffc107;
+    font-weight: bold;
+  }
+  
+  @media (max-width: 768px) {
+    .edit-container {
+      padding: 1rem 0;
+    }
+    
+    .edit-title {
+      font-size: 1.8rem;
+    }
+    
+    .property-features {
+      padding: 1rem;
+    }
+    
+    .feature-check {
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .btn-update,
+    .btn-cancel {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+</style>
+
+<script>
+  // Real-time preview updates
+  const titleInput = document.getElementById('title');
+  const locationInput = document.getElementById('location');
+  const priceInput = document.getElementById('price');
+  const descriptionInput = document.getElementById('description');
+  const charCount = document.getElementById('charCount');
+  
+  // Preview elements
+  const previewTitle = document.getElementById('previewTitle');
+  const previewLocation = document.getElementById('previewLocation');
+  const previewPrice = document.getElementById('previewPrice');
+  const previewDescription = document.getElementById('previewDescription');
+  
+  // Update preview in real-time
+  titleInput.addEventListener('input', function() {
+    previewTitle.textContent = this.value || 'Property Title';
+  });
+  
+  locationInput.addEventListener('input', function() {
+    previewLocation.textContent = this.value || 'Location';
+  });
+  
+  priceInput.addEventListener('input', function() {
+    previewPrice.textContent = this.value || '0';
+  });
+  
+  descriptionInput.addEventListener('input', function() {
+    previewDescription.textContent = this.value || 'No description provided.';
+    
+    // Update character count
+    const currentLength = this.value.length;
+    charCount.textContent = currentLength;
+    
+    if (currentLength > 800) {
+      charCount.style.color = '#dc3545';
+    } else if (currentLength > 600) {
+      charCount.style.color = '#ffc107';
+    } else {
+      charCount.style.color = '#28a745';
+    }
+  });
+  
+  // Form validation
+  const form = document.querySelector('.edit-form');
+  form.addEventListener('submit', function(e) {
+    const title = titleInput.value.trim();
+    const location = locationInput.value.trim();
+    const price = priceInput.value;
+    
+    if (!title || !location || !price || price <= 0) {
+      e.preventDefault();
+      alert('Please fill in all required fields with valid information.');
+      return false;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('.btn-update');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+    submitBtn.disabled = true;
+  });
+</script>

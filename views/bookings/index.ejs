@@ -1,22 +1,452 @@
-<% layout('layout') -%>
-<h1>My Bookings</h1>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Property</th>
-      <th>Check In</th>
-      <th>Check Out</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% bookings.forEach(b => { %>
-      <tr>
-        <td><%= b.propertyId.title %></td>
-        <td><%= b.checkInDate.toDateString() %></td>
-        <td><%= b.checkOutDate.toDateString() %></td>
-        <td><%= b.status %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+<div class="bookings-header mb-5">
+  <div class="text-center">
+    <div class="header-icon mb-3">
+      <i class="fas fa-calendar-check fa-4x text-primary"></i>
+    </div>
+    <h1 class="page-title">My Bookings</h1>
+    <p class="page-subtitle text-muted">Manage and track your reservations</p>
+  </div>
+</div>
+
+<% if (bookings && bookings.length) { %>
+  <div class="bookings-container">
+    <div class="row g-4">
+      <% bookings.forEach((booking, index) => { %>
+        <div class="col-lg-6 col-xl-4">
+          <div class="booking-card">
+            <div class="card h-100">
+              <div class="card-header booking-header">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-bookmark me-2"></i>Booking #<%= index + 1 %>
+                  </h6>
+                  <span class="status-badge status-<%= booking.status.toLowerCase() %>">
+                    <%= booking.status %>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <div class="property-info mb-3">
+                  <h5 class="property-name">
+                    <i class="fas fa-home me-2 text-primary"></i>
+                    <%= booking.propertyId.title %>
+                  </h5>
+                </div>
+                
+                <div class="booking-details">
+                  <div class="detail-row">
+                    <div class="detail-icon">
+                      <i class="fas fa-calendar-day text-success"></i>
+                    </div>
+                    <div class="detail-content">
+                      <strong>Check-in:</strong>
+                      <span class="date-display">
+                        <%= booking.checkInDate.toDateString() %>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div class="detail-row">
+                    <div class="detail-icon">
+                      <i class="fas fa-calendar-times text-warning"></i>
+                    </div>
+                    <div class="detail-content">
+                      <strong>Check-out:</strong>
+                      <span class="date-display">
+                        <%= booking.checkOutDate.toDateString() %>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div class="detail-row">
+                    <div class="detail-icon">
+                      <i class="fas fa-clock text-info"></i>
+                    </div>
+                    <div class="detail-content">
+                      <strong>Duration:</strong>
+                      <span class="duration-display">
+                        <% 
+                          const timeDiff = booking.checkOutDate.getTime() - booking.checkInDate.getTime();
+                          const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                        %>
+                        <%= daysDiff %> night<%= daysDiff > 1 ? 's' : '' %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="booking-actions mt-4">
+                  <% if (booking.status.toLowerCase() === 'confirmed') { %>
+                    <button class="btn btn-success btn-sm me-2" disabled>
+                      <i class="fas fa-check me-1"></i>Confirmed
+                    </button>
+                  <% } else if (booking.status.toLowerCase() === 'pending') { %>
+                    <button class="btn btn-warning btn-sm me-2" disabled>
+                      <i class="fas fa-hourglass-half me-1"></i>Pending
+                    </button>
+                  <% } else if (booking.status.toLowerCase() === 'cancelled') { %>
+                    <button class="btn btn-danger btn-sm me-2" disabled>
+                      <i class="fas fa-times me-1"></i>Cancelled
+                    </button>
+                  <% } %>
+                  
+                  <button class="btn btn-outline-primary btn-sm" 
+                          onclick="viewBookingDetails('<%= booking._id %>')">
+                    <i class="fas fa-eye me-1"></i>Details
+                  </button>
+                </div>
+              </div>
+              
+              <div class="card-footer booking-footer">
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>
+                  Booked on <%= booking.createdAt ? booking.createdAt.toDateString() : 'N/A' %>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+<% } else { %>
+  <div class="empty-bookings">
+    <div class="text-center py-5">
+      <div class="empty-icon mb-4">
+        <i class="fas fa-calendar-times fa-5x text-muted"></i>
+      </div>
+      <h3 class="empty-title mb-3">No Bookings Yet</h3>
+      <p class="empty-description text-muted mb-4">
+        You haven't made any reservations yet. Start exploring amazing properties!
+      </p>
+      <a href="/" class="btn btn-primary btn-lg btn-explore">
+        <i class="fas fa-search me-2"></i>Explore Properties
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-info-circle me-2"></i>Booking Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="bookingDetailsContent">
+        <!-- Details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bookings-header {
+    background: rgba(255,255,255,0.8);
+    padding: 3rem 2rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+  
+  .header-icon {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
+  .booking-card .card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+  
+  .booking-card:hover .card {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+  
+  .booking-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .status-confirmed {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+  }
+  
+  .status-pending {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+  }
+  
+  .status-cancelled {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1b0b7 100%);
+    color: #721c24;
+  }
+  
+  .property-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+    padding-bottom: 0.75rem;
+  }
+  
+  .booking-details {
+    margin: 1.5rem 0;
+  }
+  
+  .detail-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(248,249,250,0.8);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .detail-row:hover {
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+  }
+  
+  .detail-icon {
+    width: 35px;
+    text-align: center;
+    margin-right: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .detail-content {
+    flex: 1;
+  }
+  
+  .detail-content strong {
+    display: block;
+    color: #495057;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .date-display,
+  .duration-display {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .booking-actions {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 1rem;
+  }
+  
+  .booking-actions .btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .booking-actions .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  .booking-footer {
+    background: rgba(248,249,250,0.8);
+    border-top: none;
+    padding: 1rem 1.5rem;
+  }
+  
+  .empty-bookings {
+    background: rgba(255,255,255,0.8);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin: 3rem 0;
+  }
+  
+  .empty-icon {
+    opacity: 0.6;
+  }
+  
+  .empty-title {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  .empty-description {
+    font-size: 1.1rem;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+  }
+  
+  .btn-explore {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 15px 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-explore:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+  
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  }
+  
+  .modal-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+    justify-content: center;
+  }
+  
+  @media (max-width: 768px) {
+    .bookings-header {
+      padding: 2rem 1rem;
+    }
+    
+    .page-title {
+      font-size: 2rem;
+    }
+    
+    .header-icon {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .header-icon i {
+      font-size: 3rem;
+    }
+    
+    .booking-actions .btn {
+      font-size: 0.8rem;
+      padding: 6px 8px;
+    }
+    
+    .detail-row {
+      padding: 0.5rem;
+    }
+    
+    .property-name {
+      font-size: 1.1rem;
+    }
+  }
+</style>
+
+<script>
+  function viewBookingDetails(bookingId) {
+    // This would typically make an AJAX call to get booking details
+    // For now, we'll show a placeholder
+    const modalContent = document.getElementById('bookingDetailsContent');
+    modalContent.innerHTML = `
+      <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading booking details...</p>
+      </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    modal.show();
+    
+    // Simulate loading
+    setTimeout(() => {
+      modalContent.innerHTML = `
+        <div class="booking-detail-modal">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Booking ID: ${bookingId}
+          </div>
+          <p>Detailed booking information would be displayed here, including:</p>
+          <ul>
+            <li>Guest information</li>
+            <li>Payment details</li>
+            <li>Special requests</li>
+            <li>Contact information</li>
+            <li>Booking history</li>
+          </ul>
+        </div>
+      `;
+    }, 1000);
+  }
+  
+  // Add animation to booking cards on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const bookingCards = document.querySelectorAll('.booking-card');
+    bookingCards.forEach((card, index) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      
+      setTimeout(() => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 100);
+    });
+  });
+</script>

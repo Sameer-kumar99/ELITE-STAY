@@ -1,15 +1,365 @@
-<% layout('layout') -%>
-<h1>All Properties</h1>
-<a href="/properties/new" class="btn btn-success mb-3">Add Property</a>
-<div class="row">
-  <% properties.forEach(p => { %>
-    <div class="col-md-4">
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title"><a href="/properties/<%= p._id %>"><%= p.title %></a></h5>
-          <p class="card-text"><%= p.location %></p>
+
+
+<div class="properties-header mb-5">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h1 class="page-title mb-3">
+        <i class="fas fa-building me-3"></i>All Properties
+      </h1>
+      <p class="page-subtitle text-muted">Manage your property listings</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+      <a href="/properties/new" class="btn btn-success btn-add-property">
+        <i class="fas fa-plus me-2"></i>Add New Property
+      </a>
+    </div>
+  </div>
+</div>
+
+<% if (properties && properties.length) { %>
+  <div class="properties-grid">
+    <div class="row g-4">
+      <% properties.forEach((p, index) => { %>
+        <div class="col-xl-4 col-lg-6 col-md-6">
+          <div class="property-card">
+            <div class="card h-100">
+              <div class="card-header-custom">
+                <div class="property-badge">
+                  <span class="badge bg-primary">
+                    <i class="fas fa-star me-1"></i>Listed
+                  </span>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <div class="property-title-section mb-3">
+                  <h5 class="property-title">
+                    <a href="/properties/<%= p._id %>" class="title-link">
+                      <i class="fas fa-home me-2"></i><%= p.title %>
+                    </a>
+                  </h5>
+                </div>
+                
+                <div class="property-info">
+                  <div class="location-info mb-3">
+                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                    <span class="location-text"><%= p.location %></span>
+                  </div>
+                  
+                  <% if (p.price) { %>
+                    <div class="price-info mb-3">
+                      <span class="price-tag">
+                        <i class="fas fa-tag me-2"></i>$<%= p.price %>
+                        <small class="text-muted">/night</small>
+                      </span>
+                    </div>
+                  <% } %>
+                  
+                  <% if (p.description) { %>
+                    <div class="description-preview mb-3">
+                      <p class="text-muted small">
+                        <%= p.description.length > 100 ? p.description.substring(0, 100) + '...' : p.description %>
+                      </p>
+                    </div>
+                  <% } %>
+                </div>
+                
+                <div class="property-actions mt-auto">
+                  <div class="d-flex gap-2">
+                    <a href="/properties/<%= p._id %>" class="btn btn-primary btn-sm flex-fill">
+                      <i class="fas fa-eye me-1"></i>View
+                    </a>
+                    <a href="/properties/<%= p._id %>/edit" class="btn btn-secondary btn-sm flex-fill">
+                      <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm" 
+                            onclick="confirmDelete('<%= p._id %>', '<%= p.title %>')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      <% }) %>
+    </div>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <div class="text-center py-5">
+      <div class="empty-icon mb-4">
+        <i class="fas fa-home fa-5x text-muted"></i>
+      </div>
+      <h3 class="empty-title mb-3">No Properties Yet</h3>
+      <p class="empty-description text-muted mb-4">
+        Start building your property portfolio by adding your first listing.
+      </p>
+      <a href="/properties/new" class="btn btn-success btn-lg btn-get-started">
+        <i class="fas fa-plus me-2"></i>Add Your First Property
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+          Confirm Deletion
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Are you sure you want to delete this property?</p>
+        <div class="alert alert-warning">
+          <i class="fas fa-info-circle me-2"></i>
+          This action cannot be undone. All associated bookings will also be affected.
+        </div>
+        <p class="fw-bold" id="propertyNameToDelete"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <form id="deleteForm" method="POST" class="d-inline">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Delete Property
+          </button>
+        </form>
       </div>
     </div>
-  <% }) %>
+  </div>
 </div>
+
+<style>
+  .properties-header {
+    background: rgba(255,255,255,0.8);
+    padding: 2rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+  
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  
+  .btn-add-property {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 12px 25px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-add-property:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+  }
+  
+  .properties-grid {
+    margin-top: 2rem;
+  }
+  
+  .property-card .card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+  
+  .property-card:hover .card {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  }
+  
+  .card-header-custom {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+  }
+  
+  .property-badge .badge {
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .property-title-section {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 1rem;
+  }
+  
+  .property-title {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  .title-link {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .title-link:hover {
+    color: #667eea;
+  }
+  
+  .location-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+  
+  .price-info {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 10px 15px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  
+  .price-tag {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #667eea;
+  }
+  
+  .description-preview p {
+    line-height: 1.5;
+    margin-bottom: 0;
+  }
+  
+  .property-actions {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .property-actions .btn {
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+  
+  .property-actions .btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  .empty-state {
+    background: rgba(255,255,255,0.8);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin: 3rem 0;
+  }
+  
+  .empty-icon {
+    opacity: 0.6;
+  }
+  
+  .empty-title {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  .empty-description {
+    font-size: 1.1rem;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+  }
+  
+  .btn-get-started {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 15px 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-get-started:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+  }
+  
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  }
+  
+  .modal-header {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 133, 27, 0.1) 100%);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    .properties-header {
+      padding: 1.5rem;
+    }
+    
+    .page-title {
+      font-size: 2rem;
+      text-align: center;
+    }
+    
+    .btn-add-property {
+      width: 100%;
+      margin-top: 1rem;
+    }
+    
+    .property-actions .btn {
+      font-size: 0.8rem;
+      padding: 6px 8px;
+    }
+  }
+</style>
+
+<script>
+  function confirmDelete(propertyId, propertyTitle) {
+    document.getElementById('propertyNameToDelete').textContent = propertyTitle;
+    document.getElementById('deleteForm').action = `/properties/${propertyId}?_method=DELETE`;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+</script>

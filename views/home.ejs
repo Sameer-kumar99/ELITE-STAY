@@ -1,17 +1,190 @@
-<h1>Featured Properties</h1>
-<div class="row">
-  <% properties.forEach(p => { %>
-    <div class="col-md-4">
-      <div class="card mb-3">
-        <% if (p.images && p.images.length) { %>
-          <img src="<%= p.images[0] %>" class="card-img-top" alt="...">
-        <% } %>
-        <div class="card-body">
-          <h5 class="card-title"><%= p.title %></h5>
-          <p class="card-text"><%= p.location %></p>
-          <a href="/properties/<%= p._id %>" class="btn btn-primary">View</a>
+
+<div class="hero-section text-center mb-5">
+  <div class="hero-content">
+    <h1 class="display-4 mb-4">
+      <i class="fas fa-crown me-3"></i>Elite Stay
+    </h1>
+    <p class="lead text-muted mb-4">Discover luxury accommodations curated just for you</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <% properties.forEach((p, index) => { %>
+    <div class="col-lg-4 col-md-6">
+      <div class="property-card">
+        <div class="card h-100">
+          <div class="image-container position-relative">
+            <% if (p.images && p.images.length) { %>
+              <img src="<%= p.images[0] %>" class="card-img-top property-image" alt="<%= p.title %>">
+            <% } else { %>
+              <div class="placeholder-image d-flex align-items-center justify-content-center">
+                <i class="fas fa-home fa-3x text-muted"></i>
+              </div>
+            <% } %>
+            <div class="property-badge">
+              <span class="badge bg-primary">Featured</span>
+            </div>
+          </div>
+          
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title property-title">
+              <i class="fas fa-map-marker-alt text-primary me-2"></i>
+              <%= p.title %>
+            </h5>
+            <p class="card-text location-text mb-3">
+              <i class="fas fa-location-dot me-2"></i>
+              <%= p.location %>
+            </p>
+            <% if (p.price) { %>
+              <div class="price-section mb-3">
+                <span class="price-tag">
+                  <i class="fas fa-tag me-2"></i>$<%= p.price %><small class="text-muted">/night</small>
+                </span>
+              </div>
+            <% } %>
+            <div class="mt-auto">
+              <a href="/properties/<%= p._id %>" class="btn btn-primary btn-view w-100">
+                <i class="fas fa-eye me-2"></i>View Details
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   <% }) %>
 </div>
+
+<% if (!properties.length) { %>
+  <div class="empty-state text-center py-5">
+    <div class="empty-icon mb-4">
+      <i class="fas fa-home fa-5x text-muted"></i>
+    </div>
+    <h3 class="text-muted mb-3">No Properties Found</h3>
+    <p class="text-muted mb-4">Start by adding your first property to showcase to guests.</p>
+    <a href="/properties/new" class="btn btn-primary btn-lg">
+      <i class="fas fa-plus me-2"></i>Add First Property
+    </a>
+  </div>
+<% } %>
+
+<style>
+  .hero-section {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    padding: 3rem 2rem;
+    border-radius: 25px;
+    margin-bottom: 3rem;
+  }
+  
+  .property-card .card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  }
+  
+  .property-card:hover .card {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  }
+  
+  .image-container {
+    overflow: hidden;
+    height: 250px;
+    border-radius: 20px 20px 0 0;
+  }
+  
+  .property-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .property-card:hover .property-image {
+    transform: scale(1.1);
+  }
+  
+  .placeholder-image {
+    height: 250px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px 20px 0 0;
+  }
+  
+  .property-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 2;
+  }
+  
+  .property-badge .badge {
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .property-title {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .location-text {
+    color: #6c757d;
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+  
+  .price-section {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    padding: 12px 15px;
+    border-radius: 15px;
+    text-align: center;
+  }
+  
+  .price-tag {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #667eea;
+  }
+  
+  .btn-view {
+    border-radius: 15px;
+    padding: 12px 20px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-view:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  }
+  
+  .empty-state {
+    background: rgba(255,255,255,0.8);
+    border-radius: 25px;
+    padding: 4rem 2rem;
+    backdrop-filter: blur(10px);
+  }
+  
+  .empty-icon {
+    opacity: 0.6;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 2rem 1rem;
+    }
+    
+    .display-4 {
+      font-size: 2rem;
+    }
+    
+    .image-container {
+      height: 200px;
+    }
+  }
+</style>
