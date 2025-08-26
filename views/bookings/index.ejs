@@ -1,135 +1,364 @@
+<!-- Enhanced Bookings Header -->
 <div class="bookings-header mb-5">
-  <div class="text-center">
-    <div class="header-icon mb-3">
-      <i class="fas fa-calendar-check fa-4x text-primary"></i>
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <div class="header-content">
+        <div class="header-icon mb-3">
+          <i class="fas fa-calendar-check fa-4x text-primary"></i>
+        </div>
+        <h1 class="page-title">My Bookings</h1>
+        <p class="page-subtitle text-muted">Manage and track your reservations</p>
+      </div>
     </div>
-    <h1 class="page-title">My Bookings</h1>
-    <p class="page-subtitle text-muted">Manage and track your reservations</p>
+    <div class="col-md-4 text-md-end">
+      <div class="header-actions">
+        <a href="/" class="btn btn-primary btn-lg">
+          <i class="fas fa-search me-2"></i>Book More
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Booking Stats -->
+  <div class="booking-stats mt-4">
+    <div class="row g-3">
+      <div class="col-md-3 col-6">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-check text-success"></i>
+          </div>
+          <div class="stat-info">
+            <h4 class="stat-number" id="confirmedCount">0</h4>
+            <p class="stat-label">Confirmed</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-times-circle text-danger"></i>
+          </div>
+          <div class="stat-info">
+            <h4 class="stat-number" id="cancelledCount">0</h4>
+            <p class="stat-label">Cancelled</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-alt text-info"></i>
+          </div>
+          <div class="stat-info">
+            <h4 class="stat-number" id="totalCount">0</h4>
+            <p class="stat-label">Total Bookings</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter and Sort Section -->
+<div class="filter-section mb-4">
+  <div class="card filter-card">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-3">
+          <select class="form-select filter-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="pending">Pending</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select filter-select" id="sortBy">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="checkin-soon">Check-in Soon</option>
+            <option value="checkout-soon">Check-out Soon</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input type="text" class="form-control filter-select" id="propertySearch" placeholder="Search by property name...">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+            <i class="fas fa-refresh me-1"></i>Clear
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <% if (bookings && bookings.length) { %>
   <div class="bookings-container">
-    <div class="row g-4">
+    <div class="row g-4" id="bookingsGrid">
       <% bookings.forEach((booking, index) => { %>
-        <div class="col-lg-6 col-xl-4">
+        <div class="col-lg-6 col-xl-4 booking-item" 
+             data-status="<%= booking.status.toLowerCase() %>"
+             data-property="<%= booking.propertyId.title.toLowerCase() %>"
+             data-checkin="<%= booking.checkInDate.getTime() %>"
+             data-checkout="<%= booking.checkOutDate.getTime() %>"
+             data-created="<%= booking.createdAt ? booking.createdAt.getTime() : Date.now() %>">
           <div class="booking-card">
             <div class="card h-100">
               <div class="card-header booking-header">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h6 class="card-title mb-0">
-                    <i class="fas fa-bookmark me-2"></i>Booking #<%= index + 1 %>
-                  </h6>
-                  <span class="status-badge status-<%= booking.status.toLowerCase() %>">
-                    <%= booking.status %>
-                  </span>
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="booking-info">
+                    <h6 class="card-title mb-1">
+                      <i class="fas fa-bookmark me-2"></i>Booking #<%= String(index + 1).padStart(3, '0') %>
+                    </h6>
+                    <small class="text-muted">
+                      <i class="fas fa-clock me-1"></i>
+                      <%= booking.createdAt ? booking.createdAt.toDateString() : 'N/A' %>
+                    </small>
+                  </div>
+                  <div class="status-container">
+                    <span class="status-badge status-<%= booking.status.toLowerCase() %>">
+                      <% if (booking.status.toLowerCase() === 'confirmed') { %>
+                        <i class="fas fa-check-circle me-1"></i>
+                      <% } else if (booking.status.toLowerCase() === 'pending') { %>
+                        <i class="fas fa-hourglass-half me-1"></i>
+                      <% } else if (booking.status.toLowerCase() === 'cancelled') { %>
+                        <i class="fas fa-times-circle me-1"></i>
+                      <% } %>
+                      <%= booking.status %>
+                    </span>
+                  </div>
                 </div>
               </div>
               
               <div class="card-body">
+                <!-- Property Info -->
                 <div class="property-info mb-3">
                   <h5 class="property-name">
                     <i class="fas fa-home me-2 text-primary"></i>
                     <%= booking.propertyId.title %>
                   </h5>
+                  <p class="property-location text-muted mb-0">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    <%= booking.propertyId.location %>
+                  </p>
                 </div>
                 
-                <div class="booking-details">
-                  <div class="detail-row">
-                    <div class="detail-icon">
-                      <i class="fas fa-calendar-day text-success"></i>
+                <!-- Booking Timeline -->
+                <div class="booking-timeline mb-4">
+                  <div class="timeline-item">
+                    <div class="timeline-icon check-in">
+                      <i class="fas fa-calendar-day"></i>
                     </div>
-                    <div class="detail-content">
-                      <strong>Check-in:</strong>
-                      <span class="date-display">
-                        <%= booking.checkInDate.toDateString() %>
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div class="detail-row">
-                    <div class="detail-icon">
-                      <i class="fas fa-calendar-times text-warning"></i>
-                    </div>
-                    <div class="detail-content">
-                      <strong>Check-out:</strong>
-                      <span class="date-display">
-                        <%= booking.checkOutDate.toDateString() %>
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div class="detail-row">
-                    <div class="detail-icon">
-                      <i class="fas fa-clock text-info"></i>
-                    </div>
-                    <div class="detail-content">
-                      <strong>Duration:</strong>
-                      <span class="duration-display">
+                    <div class="timeline-content">
+                      <strong>Check-in</strong>
+                      <div class="date-display">
+                        <%= booking.checkInDate.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        }) %>
+                      </div>
+                      <small class="text-muted">
                         <% 
+                          const today = new Date();
+                          const checkIn = new Date(booking.checkInDate);
+                          const daysUntil = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24));
+                        %>
+                        <% if (daysUntil > 0) { %>
+                          <i class="fas fa-clock me-1"></i><%= daysUntil %> days to go
+                        <% } else if (daysUntil === 0) { %>
+                          <i class="fas fa-star me-1"></i>Today!
+                        <% } else { %>
+                          <i class="fas fa-history me-1"></i>Started
+                        <% } %>
+                      </small>
+                    </div>
+                  </div>
+                  
+                  <div class="timeline-connector"></div>
+                  
+                  <div class="timeline-item">
+                    <div class="timeline-icon check-out">
+                      <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <strong>Check-out</strong>
+                      <div class="date-display">
+                        <%= booking.checkOutDate.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        }) %>
+                      </div>
+                      <small class="text-muted">
+                        <% 
+                          const checkOut = new Date(booking.checkOutDate);
                           const timeDiff = booking.checkOutDate.getTime() - booking.checkInDate.getTime();
                           const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
                         %>
-                        <%= daysDiff %> night<%= daysDiff > 1 ? 's' : '' %>
-                      </span>
+                        <i class="fas fa-moon me-1"></i><%= daysDiff %> night<%= daysDiff > 1 ? 's' : '' %>
+                      </small>
                     </div>
                   </div>
                 </div>
                 
-                <div class="booking-actions mt-4">
-                  <% if (booking.status.toLowerCase() === 'confirmed') { %>
-                    <button class="btn btn-success btn-sm me-2" disabled>
-                      <i class="fas fa-check me-1"></i>Confirmed
+                <!-- Price Info -->
+                <% if (booking.propertyId.price) { %>
+                  <div class="price-info mb-4">
+                    <div class="price-breakdown">
+                      <div class="price-row">
+                        <span>Price per night:</span>
+                        <span>$<%= booking.propertyId.price %></span>
+                      </div>
+                      <div class="price-row">
+                        <span>Duration:</span>
+                        <span>
+                          <% 
+                            const timeDiff = booking.checkOutDate.getTime() - booking.checkInDate.getTime();
+                            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                          %>
+                          <%= daysDiff %> night<%= daysDiff > 1 ? 's' : '' %>
+                        </span>
+                      </div>
+                      <hr class="my-2">
+                      <div class="price-row total">
+                        <strong>Total Amount:</strong>
+                        <strong class="text-primary">
+                          $<%= booking.propertyId.price * daysDiff %>
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+                
+                <!-- Action Buttons -->
+                <div class="booking-actions">
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-primary btn-sm flex-fill" 
+                            onclick="viewBookingDetails('<%= booking._id %>')">
+                      <i class="fas fa-eye me-1"></i>Details
                     </button>
-                  <% } else if (booking.status.toLowerCase() === 'pending') { %>
-                    <button class="btn btn-warning btn-sm me-2" disabled>
-                      <i class="fas fa-hourglass-half me-1"></i>Pending
-                    </button>
-                  <% } else if (booking.status.toLowerCase() === 'cancelled') { %>
-                    <button class="btn btn-danger btn-sm me-2" disabled>
-                      <i class="fas fa-times me-1"></i>Cancelled
-                    </button>
-                  <% } %>
-                  
-                  <button class="btn btn-outline-primary btn-sm" 
-                          onclick="viewBookingDetails('<%= booking._id %>')">
-                    <i class="fas fa-eye me-1"></i>Details
-                  </button>
+                    
+                    <% if (booking.status.toLowerCase() === 'confirmed') { %>
+                      <button class="btn btn-success btn-sm flex-fill" disabled>
+                        <i class="fas fa-check me-1"></i>Confirmed
+                      </button>
+                    <% } else if (booking.status.toLowerCase() === 'pending') { %>
+                      <button class="btn btn-warning btn-sm flex-fill" 
+                              onclick="cancelBooking('<%= booking._id %>')">
+                        <i class="fas fa-times me-1"></i>Cancel
+                      </button>
+                    <% } %>
+                    
+                    <div class="dropdown">
+                      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                              type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" href="#" onclick="downloadReceipt('<%= booking._id %>')">
+                            <i class="fas fa-download me-2"></i>Download Receipt
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="#" onclick="shareBooking('<%= booking._id %>')">
+                            <i class="fas fa-share me-2"></i>Share Booking
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item text-danger" href="#" onclick="reportIssue('<%= booking._id %>')">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Report Issue
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="card-footer booking-footer">
-                <small class="text-muted">
-                  <i class="fas fa-clock me-1"></i>
-                  Booked on <%= booking.createdAt ? booking.createdAt.toDateString() : 'N/A' %>
-                </small>
               </div>
             </div>
           </div>
         </div>
       <% }) %>
     </div>
+    
+    <!-- No Results Message -->
+    <div class="no-results text-center py-5" id="noResults" style="display: none;">
+      <div class="empty-state">
+        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+        <h4>No Bookings Found</h4>
+        <p class="text-muted mb-4">Try adjusting your filters or search criteria</p>
+        <button class="btn btn-primary" onclick="clearFilters()">
+          <i class="fas fa-refresh me-2"></i>Clear Filters
+        </button>
+      </div>
+    </div>
   </div>
 <% } else { %>
+  <!-- Enhanced Empty State -->
   <div class="empty-bookings">
     <div class="text-center py-5">
-      <div class="empty-icon mb-4">
-        <i class="fas fa-calendar-times fa-5x text-muted"></i>
+      <div class="empty-animation mb-4">
+        <div class="calendar-icon">
+          <i class="fas fa-calendar-times fa-5x"></i>
+          <div class="floating-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
       </div>
       <h3 class="empty-title mb-3">No Bookings Yet</h3>
       <p class="empty-description text-muted mb-4">
-        You haven't made any reservations yet. Start exploring amazing properties!
+        You haven't made any reservations yet. Start exploring amazing properties and create unforgettable memories!
       </p>
-      <a href="/" class="btn btn-primary btn-lg btn-explore">
-        <i class="fas fa-search me-2"></i>Explore Properties
-      </a>
+      
+      <div class="empty-actions">
+        <a href="/" class="btn btn-primary btn-lg btn-explore me-3">
+          <i class="fas fa-search me-2"></i>Explore Properties
+        </a>
+        <a href="/properties" class="btn btn-outline-primary btn-lg">
+          <i class="fas fa-building me-2"></i>View All Listings
+        </a>
+      </div>
+      
+      <!-- Quick Tips -->
+      <div class="booking-tips mt-5">
+        <div class="row g-3 justify-content-center">
+          <div class="col-md-4">
+            <div class="tip-card">
+              <i class="fas fa-search fa-2x text-primary mb-3"></i>
+              <h6>Browse Properties</h6>
+              <p class="small text-muted">Explore our curated collection of luxury accommodations</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="tip-card">
+              <i class="fas fa-calendar-check fa-2x text-success mb-3"></i>
+              <h6>Easy Booking</h6>
+              <p class="small text-muted">Book instantly with our secure payment system</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="tip-card">
+              <i class="fas fa-headset fa-2x text-info mb-3"></i>
+              <h6>24/7 Support</h6>
+              <p class="small text-muted">Get help whenever you need it from our support team</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 <% } %>
 
-<!-- Booking Details Modal -->
+<!-- Enhanced Booking Details Modal -->
 <div class="modal fade" id="bookingModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
@@ -139,10 +368,55 @@
       </div>
       <div class="modal-body" id="bookingDetailsContent">
         <!-- Details will be loaded here -->
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-muted">Loading booking details...</p>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           <i class="fas fa-times me-2"></i>Close
+        </button>
+        <button type="button" class="btn btn-primary" id="printDetails">
+          <i class="fas fa-print me-2"></i>Print Details
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>Cancel Booking
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fas fa-info-circle me-2"></i>
+          Are you sure you want to cancel this booking? This action cannot be undone.
+        </div>
+        <div class="cancellation-policy">
+          <h6>Cancellation Policy:</h6>
+          <ul class="small text-muted">
+            <li>Free cancellation up to 24 hours before check-in</li>
+            <li>50% refund if cancelled within 24 hours</li>
+            <li>No refund after check-in time</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-arrow-left me-2"></i>Keep Booking
+        </button>
+        <button type="button" class="btn btn-danger" id="confirmCancel">
+          <i class="fas fa-times me-2"></i>Yes, Cancel Booking
         </button>
       </div>
     </div>
@@ -150,28 +424,58 @@
 </div>
 
 <style>
+  /* Enhanced Bookings Header */
   .bookings-header {
-    background: rgba(255,255,255,0.8);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
     padding: 3rem 2rem;
-    border-radius: 25px;
+    border-radius: 30px;
     backdrop-filter: blur(10px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .bookings-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  
+  .header-content {
+    position: relative;
+    z-index: 2;
   }
   
   .header-icon {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
     width: 100px;
     height: 100px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
   
   .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 800;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -180,38 +484,134 @@
   }
   
   .page-subtitle {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 500;
   }
   
-  .booking-card .card {
+  .header-actions {
+    position: relative;
+    z-index: 2;
+  }
+  
+  /* Booking Stats */
+  .booking-stats {
+    margin-top: 2rem;
+  }
+  
+  .stat-card {
+    background: rgba(255,255,255,0.9);
+    padding: 1.5rem;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(255,255,255,0.8);
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  /* Filter Section */
+  .filter-section {
+    margin: 2rem 0;
+  }
+  
+  .filter-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
     border: none;
     border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  }
+  
+  .filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    background: rgba(248,249,250,0.8);
     transition: all 0.3s ease;
+  }
+  
+  .filter-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    background: rgba(255,255,255,0.95);
+  }
+  
+  /* Enhanced Booking Cards */
+  .booking-card .card {
+    border: none;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(10px);
     overflow: hidden;
+    position: relative;
   }
   
   .booking-card:hover .card {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
   }
   
   .booking-header {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
     border-bottom: none;
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem;
+    position: relative;
+  }
+  
+  .booking-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
   }
   
   .status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
   }
   
   .status-confirmed {
@@ -230,66 +630,112 @@
   }
   
   .property-name {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
-    padding-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   
-  .booking-details {
-    margin: 1.5rem 0;
+  .property-location {
+    font-size: 0.95rem;
   }
   
-  .detail-row {
+  /* Booking Timeline */
+  .booking-timeline {
+    position: relative;
+    padding: 1rem 0;
+  }
+  
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    background: rgba(248,249,250,0.8);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-  }
-  
-  .detail-row:hover {
-    background: rgba(102, 126, 234, 0.05);
-    transform: translateX(5px);
-  }
-  
-  .detail-icon {
-    width: 35px;
-    text-align: center;
-    margin-right: 1rem;
-    font-size: 1.1rem;
-  }
-  
-  .detail-content {
-    flex: 1;
-  }
-  
-  .detail-content strong {
-    display: block;
-    color: #495057;
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-  }
-  
-  .date-display,
-  .duration-display {
+    justify-content: center;
     font-size: 1rem;
+    color: white;
+    flex-shrink: 0;
+    z-index: 2;
+    position: relative;
+  }
+  
+  .timeline-icon.check-in {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  }
+  
+  .timeline-icon.check-out {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+  }
+  
+  .timeline-connector {
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: 40px;
+    width: 2px;
+    background: linear-gradient(180deg, #28a745, #ffc107);
+    z-index: 1;
+  }
+  
+  .timeline-content {
+    flex: 1;
+    padding-top: 0.5rem;
+  }
+  
+  .date-display {
+    font-size: 1.1rem;
     font-weight: 600;
     color: #2c3e50;
+    margin: 0.25rem 0;
   }
   
+  /* Price Info */
+  .price-info {
+    background: rgba(248,249,250,0.8);
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .price-breakdown {
+    font-size: 0.95rem;
+  }
+  
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  
+  .price-row.total {
+    font-size: 1.1rem;
+    padding-top: 0.5rem;
+  }
+  
+  /* Action Buttons */
   .booking-actions {
-    border-top: 1px solid rgba(0,0,0,0.1);
+    margin-top: 1.5rem;
     padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
   }
   
   .booking-actions .btn {
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 500;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
   }
   
@@ -297,39 +743,79 @@
     transform: translateY(-1px);
   }
   
-  .booking-footer {
-    background: rgba(248,249,250,0.8);
-    border-top: none;
-    padding: 1rem 1.5rem;
-  }
-  
+  /* Empty State Enhancements */
   .empty-bookings {
     background: rgba(255,255,255,0.8);
-    border-radius: 25px;
+    border-radius: 30px;
     backdrop-filter: blur(10px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     margin: 3rem 0;
+    position: relative;
+    overflow: hidden;
   }
   
-  .empty-icon {
+  .empty-animation {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .calendar-icon {
+    position: relative;
+    color: #6c757d;
     opacity: 0.6;
+  }
+  
+  .floating-dots {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+  }
+  
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+    margin: 0 2px;
+    animation: bounce 1.4s ease-in-out infinite both;
+  }
+  
+  .dot:nth-child(1) { animation-delay: -0.32s; }
+  .dot:nth-child(2) { animation-delay: -0.16s; }
+  
+  @keyframes bounce {
+    0%, 80%, 100% {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+    40% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
   
   .empty-title {
     color: #2c3e50;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 2rem;
   }
   
   .empty-description {
-    font-size: 1.1rem;
-    max-width: 400px;
+    font-size: 1.2rem;
+    max-width: 500px;
     margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
+  
+  .empty-actions {
+    margin-bottom: 3rem;
   }
   
   .btn-explore {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
-    border-radius: 15px;
+    border-radius: 25px;
     padding: 15px 30px;
     font-weight: 600;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
@@ -341,29 +827,66 @@
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   }
   
+  /* Booking Tips */
+  .booking-tips {
+    background: rgba(248,249,250,0.8);
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+  }
+  
+  .tip-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255,255,255,0.8);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .tip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .tip-card h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+  }
+  
+  /* Modal Enhancements */
   .modal-content {
     border: none;
-    border-radius: 20px;
+    border-radius: 25px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    overflow: hidden;
   }
   
   .modal-header {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
     border-bottom: none;
-    border-radius: 20px 20px 0 0;
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
   }
   
   .modal-body {
-    padding: 1.5rem;
+    padding: 2rem;
   }
   
   .modal-footer {
     border-top: none;
-    padding: 1.5rem;
-    justify-content: center;
+    padding: 1.5rem 2rem;
+    background: rgba(248,249,250,0.5);
   }
   
+  .cancellation-policy {
+    background: rgba(255, 193, 7, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 3px solid #ffc107;
+  }
+  
+  /* Responsive Design */
   @media (max-width: 768px) {
     .bookings-header {
       padding: 2rem 1rem;
@@ -373,80 +896,477 @@
       font-size: 2rem;
     }
     
-    .header-icon {
-      width: 80px;
-      height: 80px;
+    .header-actions {
+      margin-top: 1rem;
     }
     
-    .header-icon i {
-      font-size: 3rem;
+    .header-actions .btn {
+      width: 100%;
+    }
+    
+    .stat-card {
+      padding: 1rem;
+      flex-direction: column;
+      text-align: center;
+      gap: 0.5rem;
+    }
+    
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+    }
+    
+    .stat-number {
+      font-size: 1.5rem;
+    }
+    
+    .filter-section .row {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .booking-actions .d-flex {
+      flex-direction: column;
+      gap: 0.5rem;
     }
     
     .booking-actions .btn {
-      font-size: 0.8rem;
-      padding: 6px 8px;
+      width: 100%;
     }
     
-    .detail-row {
-      padding: 0.5rem;
+    .timeline-connector {
+      left: 19px;
     }
     
-    .property-name {
-      font-size: 1.1rem;
+    .empty-title {
+      font-size: 1.5rem;
+    }
+    
+    .empty-description {
+      font-size: 1rem;
+    }
+    
+    .empty-actions {
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .empty-actions .btn {
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .booking-tips .row {
+      flex-direction: column;
     }
   }
+  
+  /* Loading Animation */
+  .booking-item {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes slideInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Stagger animation delays */
+  .booking-item:nth-child(1) { animation-delay: 0.1s; }
+  .booking-item:nth-child(2) { animation-delay: 0.2s; }
+  .booking-item:nth-child(3) { animation-delay: 0.3s; }
+  .booking-item:nth-child(4) { animation-delay: 0.4s; }
+  .booking-item:nth-child(5) { animation-delay: 0.5s; }
+  .booking-item:nth-child(6) { animation-delay: 0.6s; }
 </style>
 
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize booking statistics
+    updateBookingStats();
+    
+    // Initialize filters
+    initializeFilters();
+    
+    // Initialize modal functionality
+    initializeModals();
+  });
+  
+  // Update booking statistics
+  function updateBookingStats() {
+    const bookingItems = document.querySelectorAll('.booking-item');
+    let confirmed = 0, pending = 0, cancelled = 0;
+    
+    bookingItems.forEach(item => {
+      const status = item.dataset.status;
+      switch(status) {
+        case 'confirmed': confirmed++; break;
+        case 'pending': pending++; break;
+        case 'cancelled': cancelled++; break;
+      }
+    });
+    
+    // Update counters with animation
+    animateCounter('confirmedCount', confirmed);
+    animateCounter('pendingCount', pending);
+    animateCounter('cancelledCount', cancelled);
+    animateCounter('totalCount', bookingItems.length);
+  }
+  
+  // Animate counter
+  function animateCounter(id, target) {
+    const element = document.getElementById(id);
+    let current = 0;
+    const increment = target / 20;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        element.textContent = target;
+        clearInterval(timer);
+      } else {
+        element.textContent = Math.floor(current);
+      }
+    }, 50);
+  }
+  
+  // Initialize filter functionality
+  function initializeFilters() {
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const propertySearch = document.getElementById('propertySearch');
+    
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (sortBy) sortBy.addEventListener('change', applyFilters);
+    if (propertySearch) propertySearch.addEventListener('input', debounce(applyFilters, 300));
+  }
+  
+  // Apply filters
+  function applyFilters() {
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const propertySearch = document.getElementById('propertySearch');
+    const bookingItems = document.querySelectorAll('.booking-item');
+    const noResults = document.getElementById('noResults');
+    
+    const statusValue = statusFilter ? statusFilter.value.toLowerCase() : '';
+    const searchValue = propertySearch ? propertySearch.value.toLowerCase() : '';
+    const sortValue = sortBy ? sortBy.value : 'newest';
+    
+    let visibleItems = [];
+    
+    // Filter items
+    bookingItems.forEach(item => {
+      const itemStatus = item.dataset.status;
+      const itemProperty = item.dataset.property;
+      
+      const statusMatch = !statusValue || itemStatus === statusValue;
+      const propertyMatch = !searchValue || itemProperty.includes(searchValue);
+      
+      if (statusMatch && propertyMatch) {
+        item.style.display = 'block';
+        visibleItems.push(item);
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    
+    // Sort visible items
+    const container = document.querySelector('#bookingsGrid');
+    const sortedItems = visibleItems.sort((a, b) => {
+      switch(sortValue) {
+        case 'oldest':
+          return parseInt(a.dataset.created) - parseInt(b.dataset.created);
+        case 'checkin-soon':
+          return parseInt(a.dataset.checkin) - parseInt(b.dataset.checkin);
+        case 'checkout-soon':
+          return parseInt(a.dataset.checkout) - parseInt(b.dataset.checkout);
+        default: // newest
+          return parseInt(b.dataset.created) - parseInt(a.dataset.created);
+      }
+    });
+    
+    // Reorder DOM elements
+    sortedItems.forEach(item => {
+      container.appendChild(item);
+    });
+    
+    // Show/hide no results
+    if (noResults) {
+      noResults.style.display = visibleItems.length === 0 ? 'block' : 'none';
+    }
+    
+    // Update stats for visible items
+    updateVisibleStats(visibleItems);
+  }
+  
+  // Update stats for visible items
+  function updateVisibleStats(items) {
+    let confirmed = 0, pending = 0, cancelled = 0;
+    
+    items.forEach(item => {
+      const status = item.dataset.status;
+      switch(status) {
+        case 'confirmed': confirmed++; break;
+        case 'pending': pending++; break;
+        case 'cancelled': cancelled++; break;
+      }
+    });
+    
+    // Update counters
+    document.getElementById('confirmedCount').textContent = confirmed;
+    document.getElementById('pendingCount').textContent = pending;
+    document.getElementById('cancelledCount').textContent = cancelled;
+    document.getElementById('totalCount').textContent = items.length;
+  }
+  
+  // Clear filters
+  function clearFilters() {
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const propertySearch = document.getElementById('propertySearch');
+    
+    if (statusFilter) statusFilter.value = '';
+    if (sortBy) sortBy.value = 'newest';
+    if (propertySearch) propertySearch.value = '';
+    
+    applyFilters();
+  }
+  
+  // Debounce function
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+  
+  // Initialize modals
+  function initializeModals() {
+    const printBtn = document.getElementById('printDetails');
+    if (printBtn) {
+      printBtn.addEventListener('click', function() {
+        window.print();
+      });
+    }
+  }
+  
+  // View booking details
   function viewBookingDetails(bookingId) {
-    // This would typically make an AJAX call to get booking details
-    // For now, we'll show a placeholder
     const modalContent = document.getElementById('bookingDetailsContent');
+    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    
+    // Show loading state
     modalContent.innerHTML = `
-      <div class="text-center">
+      <div class="text-center py-4">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-3">Loading booking details...</p>
+        <p class="mt-3 text-muted">Loading booking details...</p>
       </div>
     `;
     
-    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
     modal.show();
     
-    // Simulate loading
+    // Simulate API call
     setTimeout(() => {
       modalContent.innerHTML = `
         <div class="booking-detail-modal">
-          <div class="alert alert-info">
+          <div class="alert alert-info mb-4">
             <i class="fas fa-info-circle me-2"></i>
-            Booking ID: ${bookingId}
+            <strong>Booking Reference:</strong> ${bookingId}
           </div>
-          <p>Detailed booking information would be displayed here, including:</p>
-          <ul>
-            <li>Guest information</li>
-            <li>Payment details</li>
-            <li>Special requests</li>
-            <li>Contact information</li>
-            <li>Booking history</li>
-          </ul>
+          
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="detail-section">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-user me-2"></i>Guest Information
+                </h6>
+                <div class="detail-item">
+                  <strong>Name:</strong> John Doe
+                </div>
+                <div class="detail-item">
+                  <strong>Email:</strong> john.doe@email.com
+                </div>
+                <div class="detail-item">
+                  <strong>Phone:</strong> +1 (555) 123-4567
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="detail-section">
+                <h6 class="text-success mb-3">
+                  <i class="fas fa-credit-card me-2"></i>Payment Information
+                </h6>
+                <div class="detail-item">
+                  <strong>Payment Method:</strong> Credit Card (**** 1234)
+                </div>
+                <div class="detail-item">
+                  <strong>Transaction ID:</strong> TXN${bookingId.slice(-8)}
+                </div>
+                <div class="detail-item">
+                  <strong>Payment Status:</strong> 
+                  <span class="badge bg-success">Completed</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <div class="detail-section">
+                <h6 class="text-warning mb-3">
+                  <i class="fas fa-clipboard-list me-2"></i>Special Requests
+                </h6>
+                <div class="alert alert-light">
+                  <i class="fas fa-comment me-2"></i>
+                  Late check-in requested. Prefer ground floor room if available.
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <div class="detail-section">
+                <h6 class="text-info mb-3">
+                  <i class="fas fa-history me-2"></i>Booking Timeline
+                </h6>
+                <div class="timeline-small">
+                  <div class="timeline-item-small">
+                    <i class="fas fa-plus-circle text-primary"></i>
+                    <span>Booking Created - Today 2:30 PM</span>
+                  </div>
+                  <div class="timeline-item-small">
+                    <i class="fas fa-check-circle text-success"></i>
+                    <span>Payment Confirmed - Today 2:31 PM</span>
+                  </div>
+                  <div class="timeline-item-small">
+                    <i class="fas fa-envelope text-info"></i>
+                    <span>Confirmation Sent - Today 2:32 PM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
     }, 1000);
   }
   
-  // Add animation to booking cards on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    const bookingCards = document.querySelectorAll('.booking-card');
-    bookingCards.forEach((card, index) => {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(30px)';
+  // Cancel booking
+  let currentBookingId = null;
+  
+  function cancelBooking(bookingId) {
+    currentBookingId = bookingId;
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
+    
+    const confirmBtn = document.getElementById('confirmCancel');
+    confirmBtn.onclick = function() {
+      // Show loading state
+      confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cancelling...';
+      confirmBtn.disabled = true;
       
+      // Simulate API call
       setTimeout(() => {
-        card.style.transition = 'all 0.5s ease';
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }, index * 100);
-    });
-  });
+        cancelModal.hide();
+        
+        // Update booking status in UI
+        const bookingItem = document.querySelector(`[data-booking-id="${bookingId}"]`);
+        if (bookingItem) {
+          const statusBadge = bookingItem.querySelector('.status-badge');
+          statusBadge.className = 'status-badge status-cancelled';
+          statusBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i>Cancelled';
+        }
+        
+        // Show success notification
+        showNotification('Booking cancelled successfully', 'success');
+        
+        // Reset button
+        confirmBtn.innerHTML = '<i class="fas fa-times me-2"></i>Yes, Cancel Booking';
+        confirmBtn.disabled = false;
+        
+        // Update stats
+        updateBookingStats();
+      }, 2000);
+    };
+  }
+  
+  // Download receipt
+  function downloadReceipt(bookingId) {
+    showNotification('Receipt download started...', 'info');
+    // Simulate download
+    setTimeout(() => {
+      showNotification('Receipt downloaded successfully!', 'success');
+    }, 1500);
+  }
+  
+  // Share booking
+  function shareBooking(bookingId) {
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Booking - Elite Stay',
+        text: 'Check out my booking details',
+        url: `${window.location.origin}/bookings/${bookingId}`
+      });
+    } else {
+      // Fallback - copy to clipboard
+      navigator.clipboard.writeText(`${window.location.origin}/bookings/${bookingId}`);
+      showNotification('Booking link copied to clipboard!', 'success');
+    }
+  }
+  
+  // Report issue
+  function reportIssue(bookingId) {
+    showNotification('Redirecting to support...', 'info');
+    setTimeout(() => {
+      // Redirect to support page or open support modal
+      window.location.href = `/support?booking=${bookingId}`;
+    }, 1000);
+  }
+  
+  // Show notification
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} notification-toast`;
+    notification.innerHTML = `
+      <i class="fas fa-${type === 'success' ? 'check' : type === 'info' ? 'info' : 'exclamation'}-circle me-2"></i>
+      ${message}
+    `;
+    
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      animation: slideInRight 0.3s ease-out;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => notification.remove(), 300);
+    }, 4000);
+  }
 </script>
+      <div class="col-md-3 col-6">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-hourglass-half text-warning"></i>
+          </div>
+          <div class="stat-info">
+            <h4 class="stat-number" id="pendingCount">0</h4>
+            <p class="stat-label">Pending</p>
+          </div>

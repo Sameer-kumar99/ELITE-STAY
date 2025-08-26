@@ -4,7 +4,7 @@ import Property from '../models/property.js';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const properties = await Property.find().limit(10);
+  const properties = await Property.find();
   res.render('home', { properties });
 });
 

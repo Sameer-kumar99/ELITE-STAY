@@ -1,190 +1,879 @@
-
-<div class="hero-section text-center mb-5">
-  <div class="hero-content">
-    <h1 class="display-4 mb-4">
-      <i class="fas fa-crown me-3"></i>Elite Stay
+<div class="hero-section mb-5">
+  <div class="hero-content text-center">
+    <!-- <div class="hero-badge mb-3">
+      <i class="fa-regular fa-house"></i>
+      <i></i>Premium Collection
+    </div> -->
+    <h1 class="hero-title display-3 mb-4">
+      <i></i>ELITE &nbspSTAY
     </h1>
-    <p class="lead text-muted mb-4">Discover luxury accommodations curated just for you</p>
+    <% if (!currentUser) { %>
+  <div class="hero-cta">
+    <form action="/signup" method="get" style="display:inline;">
+      <button type="submit" class="btn btn-primary btn-lg me-3 ">
+        <i class="fas fa-user-plus me-2"></i>Get Started
+      </button>
+    </form>
+    <form action="/properties" method="get" style="display:inline;">
+      <button type="submit" class="btn btn-outline-light btn-lg">
+        <i class="fas fa-search me-2"></i>Explore Properties
+      </button>
+    </form>
+  </div>
+<% } else { %>
+  <div class="hero-cta">
+    <form action="/properties/new" method="get" style="display:inline;">
+      <button type="submit" class="btn btn-success btn-lg me-3">
+        <i class="fas fa-plus me-2"></i>List Your Property
+      </button>
+    </form>
+    <form action="/bookings" method="get" style="display:inline;">
+      <button type="submit" class="btn btn-outline-light btn-lg">
+        <i class="fas fa-calendar-check me-2"></i>My Bookings
+      </button>
+    </form>
+  </div>
+<% } %>
+  
+  <!-- Hero Background Animation -->
+  <div class="hero-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
   </div>
 </div>
 
-<div class="row g-4">
-  <% properties.forEach((p, index) => { %>
-    <div class="col-lg-4 col-md-6">
-      <div class="property-card">
-        <div class="card h-100">
-          <div class="image-container position-relative">
-            <% if (p.images && p.images.length) { %>
-              <img src="<%= p.images[0] %>" class="card-img-top property-image" alt="<%= p.title %>">
-            <% } else { %>
-              <div class="placeholder-image d-flex align-items-center justify-content-center">
-                <i class="fas fa-home fa-3x text-muted"></i>
+<!-- Properties Grid -->
+<div class="properties-section">
+  <% if (properties && properties.length) { %>
+    <div class="section-header text-center mb-5">
+      <h2 class="section-title">
+        <i></i>&nbsp;&nbsp;&nbsp;&nbsp;Featured Properties
+      </h2>
+    </div>
+    
+    <div class="properties-grid" id="propertiesGrid">
+      <div class="row g-4 justify-content-center">
+        <% properties.forEach((p, index) => { %>
+          <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 property-item" 
+               data-location="<%= p.location.toLowerCase() %>" 
+               data-price="<%= p.price || 0 %>" 
+               data-name="<%= p.title.toLowerCase() %>">
+            <div class="card property-card h-100">
+              <div class="position-relative image-container">
+                <% if (p.images && p.images.length) { %>
+                  <img src="<%= p.images[0] %>" class="card-img-top" alt="<%= p.title %>">
+                <% } else { %>
+                  <div class="placeholder-image d-flex align-items-center justify-content-center">
+                    <i class="fas fa-home fa-4x text-muted"></i>
+                  </div>
+                <% } %>
+                
+                <span class="guest-favorite-badge">Guest favourite</span>
+                <button class="favorite-btn-new" onclick="toggleFavorite(this, '<%= p._id %>')">
+                  <i class="fa-thin fa-heart"></i>
+                </button>
+                
+                <div class="image-overlay">
+                  <div class="overlay-content">
+                    <a href="/properties/<%= p._id %>" class="btn btn-light btn-sm">
+                      <!-- <i class="fas fa-eye me-1"></i>Quick View -->
+                    </a>
+                  </div>
+                </div>
               </div>
-            <% } %>
-            <div class="property-badge">
-              <span class="badge bg-primary">Featured</span>
+              
+              <div class="card-body">
+                <p class="property-location mb-2">
+                  <i class="fas fa-map-marker-alt me-1"></i>
+                  <%= p.location %>
+                </p>
+                
+                <h5 class="property-title mb-2">
+                  <%= p.title %>
+                </h5>
+                
+                <% if (p.description) { %>
+                  <p class="property-dates mb-2 text-muted">
+                    <%= p.description.length > 50 ? p.description.substring(0, 50) + '...' : p.description %>
+                  </p>
+                <% } %>
+                
+                <div class="property-rating-new mb-3">
+                  <i class="fas fa-star rating-star"></i>
+                  <span class="rating-text">4.9</span>
+                  <span class="review-count text-muted">(24 reviews)</span>
+                </div>
+                
+                <% if (p.price) { %>
+                  <div class="property-price">
+                    <span class="price-amount">$<%= p.price %></span>
+                    <span class="price-period"> night</span>
+                  </div>
+                <% } %>
+              </div>
             </div>
           </div>
-          
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title property-title">
-              <i class="fas fa-map-marker-alt text-primary me-2"></i>
-              <%= p.title %>
-            </h5>
-            <p class="card-text location-text mb-3">
-              <i class="fas fa-location-dot me-2"></i>
-              <%= p.location %>
-            </p>
-            <% if (p.price) { %>
-              <div class="price-section mb-3">
-                <span class="price-tag">
-                  <i class="fas fa-tag me-2"></i>$<%= p.price %><small class="text-muted">/night</small>
-                </span>
-              </div>
-            <% } %>
-            <div class="mt-auto">
-              <a href="/properties/<%= p._id %>" class="btn btn-primary btn-view w-100">
-                <i class="fas fa-eye me-2"></i>View Details
-              </a>
-            </div>
+        <% }) %>
+      </div>
+    </div>
+    
+    <!-- Load More Button -->
+    <div class="text-center mt-5">
+      <button class="btn btn-outline-primary btn-lg" id="loadMoreBtn" style="display: none;">
+        <i class="fas fa-plus me-2"></i>Load More Properties
+      </button>
+    </div>
+    
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="text-center py-5">
+        <div class="empty-icon mb-4">
+          <i class="fas fa-home fa-5x text-muted"></i>
+        </div>
+        <h3 class="empty-title mb-3">No Properties Available</h3>
+        <p class="empty-description text-muted mb-4">
+          Be the first to list your property and start welcoming guests!
+        </p>
+        <% if (currentUser) { %>
+          <a href="/properties/new" class="btn btn-success btn-lg">
+            <i class="fas fa-plus me-2"></i>Add First Property
+          </a>
+        <% } else { %>
+          <div>
+            <a href="/signup" class="btn btn-success btn-lg me-3">
+              <i class="fas fa-user-plus me-2"></i>Sign Up to List
+            </a>
+            <a href="/login" class="btn btn-outline-primary btn-lg">
+              <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
           </div>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Features Section -->
+<div class="features-section mt-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="section-title">
+        <i class="fas fa-gem me-2"></i>Why Choose Elite Stay?
+      </h2>
+      <p class="section-subtitle text-muted">
+        Experience the difference with our premium service
+      </p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card text-center">
+          <div class="feature-icon mb-3">
+            <i class="fas fa-shield-alt fa-3x"></i>
+          </div>
+          <h4>Secure Booking</h4>
+          <p class="text-muted">
+            100% secure payment processing with instant booking confirmation
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card text-center">
+          <div class="feature-icon mb-3">
+            <i class="fas fa-headset fa-3x"></i>
+          </div>
+          <h4>24/7 Support</h4>
+          <p class="text-muted">
+            Round-the-clock customer support for all your needs
+          </p>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-card text-center">
+          <div class="feature-icon mb-3">
+            <i class="fas fa-award fa-3x"></i>
+          </div>
+          <h4>Premium Quality</h4>
+          <p class="text-muted">
+            Handpicked properties that meet our luxury standards
+          </p>
         </div>
       </div>
     </div>
-  <% }) %>
+  </div>
 </div>
 
-<% if (!properties.length) { %>
-  <div class="empty-state text-center py-5">
-    <div class="empty-icon mb-4">
-      <i class="fas fa-home fa-5x text-muted"></i>
-    </div>
-    <h3 class="text-muted mb-3">No Properties Found</h3>
-    <p class="text-muted mb-4">Start by adding your first property to showcase to guests.</p>
-    <a href="/properties/new" class="btn btn-primary btn-lg">
-      <i class="fas fa-plus me-2"></i>Add First Property
-    </a>
-  </div>
-<% } %>
-
 <style>
+  /* Hero Section Enhancements */
   .hero-section {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    padding: 3rem 2rem;
-    border-radius: 25px;
+    padding: 4rem 2rem;
+    border-radius: 30px;
+    position: relative;
+    overflow: hidden;
     margin-bottom: 3rem;
   }
   
-  .property-card .card {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: none;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  }
-  
-  .property-card:hover .card {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  }
-  
-  .image-container {
-    overflow: hidden;
-    height: 250px;
-    border-radius: 20px 20px 0 0;
-  }
-  
-  .property-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-  
-  .property-card:hover .property-image {
-    transform: scale(1.1);
-  }
-  
-  .placeholder-image {
-    height: 250px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 20px 20px 0 0;
-  }
-  
-  .property-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    z-index: 2;
-  }
-  
-  .property-badge .badge {
-    padding: 8px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 500;
-  }
-  
-  .property-title {
-    color: #2c3e50;
+  .hero-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
     font-weight: 600;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
   }
   
-  .location-text {
-    color: #6c757d;
-    font-size: 0.95rem;
-    font-weight: 400;
-  }
-  
-  .price-section {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    padding: 12px 15px;
-    border-radius: 15px;
+  .hero-title {
+    font-weight: 800;
+    font-size: 100px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
     text-align: center;
   }
   
-  .price-tag {
-    font-size: 1.1rem;
+  .hero-cta .btn {
+    border-radius: 25px;
+    padding: 12px 30px;
     font-weight: 600;
-    color: #667eea;
-  }
-  
-  .btn-view {
-    border-radius: 15px;
-    padding: 12px 20px;
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    color: #667eea;
+    border-color: #6c757d;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.2s cubic-bezier(.68,-0.55,.27,1.55), box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+  }
+
+  .hero-cta .btn:hover, .hero-cta .btn:focus {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.18);
+  }
+
+  .hero-cta .btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+  }
+  
+  /* Hero Particles Animation */
+  .hero-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  
+  .particle {
+    position: absolute;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .particle:nth-child(1) {
+    width: 60px;
+    height: 60px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+  
+  .particle:nth-child(2) {
+    width: 40px;
+    height: 40px;
+    top: 60%;
+    left: 85%;
+    animation-delay: 2s;
+  }
+  
+  .particle:nth-child(3) {
+    width: 80px;
+    height: 80px;
+    top: 80%;
+    left: 20%;
+    animation-delay: 4s;
+  }
+  
+  .particle:nth-child(4) {
+    width: 30px;
+    height: 30px;
+    top: 30%;
+    left: 80%;
+    animation-delay: 1s;
+  }
+  
+  .particle:nth-child(5) {
+    width: 50px;
+    height: 50px;
+    top: 70%;
+    left: 60%;
+    animation-delay: 3s;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+      opacity: 0.8;
+    }
+  }
+
+  /* Properties Grid Layout - Updated for new sizing */
+  .properties-grid {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .properties-grid .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px;
+  }
+
+  /* Modern Property Cards - Updated with larger images */
+  .property-card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    background: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .property-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Image Container - Ensures full width coverage */
+  .image-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .property-card .card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+    display: block;
+  }
+
+  .property-card:hover .card-img-top {
+    transform: scale(1.05);
+  }
+
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .guest-favorite-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 10;
+  }
+
+  .favorite-btn-new {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+
+  .favorite-btn-new:hover {
+    background: white;
+    transform: scale(1.1);
+  }
+
+  .favorite-btn-new i {
+    color: #dc3545;
+    font-size: 16px;
+  }
+
+  .favorite-btn-new.favorited {
+    background: #dc3545;
+  }
+
+  .favorite-btn-new.favorited i {
+    color: white;
+    font-weight: 900;
+  }
+
+  .property-card .card-body {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .property-location {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .property-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .property-dates {
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .property-rating-new {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .rating-star {
+    color: #ffd700;
+    font-size: 12px;
+  }
+
+  .rating-text {
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .review-count {
+    font-size: 14px;
+  }
+
+  .property-price {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  .price-amount {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .price-period {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  /* Image overlay for hover effect */
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.3s ease;
   }
   
-  .btn-view:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  .property-card:hover .image-overlay {
+    opacity: 1;
   }
   
+  /* Features Section */
+  .features-section {
+    background: rgba(255,255,255,0.8);
+    padding: 4rem 2rem;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+  
+  .section-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .section-subtitle {
+    font-size: 1.1rem;
+    font-weight: 500;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .feature-card {
+    background: rgba(255,255,255,0.9);
+    padding: 2rem;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    backdrop-filter: blur(10px);
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+  
+  .feature-icon {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: #667eea;
+  }
+  
+  .feature-card h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 1.5rem 0 1rem;
+  }
+  
+  /* Empty State */
   .empty-state {
     background: rgba(255,255,255,0.8);
     border-radius: 25px;
     padding: 4rem 2rem;
     backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   }
   
   .empty-icon {
     opacity: 0.6;
   }
   
-  @media (max-width: 768px) {
+  .empty-title {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  .empty-description {
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+  }
+
+  /* Responsive Design - Updated for proper grid layout */
+  @media (max-width: 575px) {
     .hero-section {
       padding: 2rem 1rem;
     }
     
-    .display-4 {
-      font-size: 2rem;
+    .hero-title {
+      font-size: 2.5rem;
     }
     
+    .hero-cta .btn {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    
+    /* Single column on mobile */
+    .property-item {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+
     .image-container {
-      height: 200px;
+      height: 250px;
+    }
+    
+    .features-section {
+      padding: 2rem 1rem;
     }
   }
+
+  @media (min-width: 576px) and (max-width: 767px) {
+    /* Two columns on small tablets */
+    .property-item {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+
+    .image-container {
+      height: 280px;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    /* Three columns on medium tablets */
+    .property-item {
+      flex: 0 0 33.333333%;
+      max-width: 33.333333%;
+    }
+
+    .image-container {
+      height: 280px;
+    }
+  }
+
+  @media (min-width: 992px) and (max-width: 1199px) {
+    /* Three columns on laptops */
+    .property-item {
+      flex: 0 0 33.333333%;
+      max-width: 33.333333%;
+    }
+
+    .image-container {
+      height: 300px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    /* Four columns on large screens */
+    .property-item {
+      flex: 0 0 25%;
+      max-width: 25%;
+      margin: 0 40px 0 30px;
+    }
+
+    .image-container {
+      height: 300px;
+    }
+  }
+
+  /* Ensure proper spacing */
+  .property-item {
+    padding: 0 15px;
+    margin-bottom: 30px;
+  }
 </style>
+
+<script>
+  // Search and Filter Functionality (preserved)
+  document.addEventListener('DOMContentLoaded', function() {
+    const locationSearch = document.getElementById('locationSearch');
+    const priceFilter = document.getElementById('priceFilter');
+    const sortBy = document.getElementById('sortBy');
+    const searchBtn = document.querySelector('.btn-search');
+    const propertyItems = document.querySelectorAll('.property-item');
+    
+    // Search functionality
+    function filterProperties() {
+      if (!locationSearch || !priceFilter || !sortBy) return;
+      
+      const locationValue = locationSearch.value.toLowerCase();
+      const priceValue = parseInt(priceFilter.value) || Infinity;
+      const sortValue = sortBy.value;
+      
+      let visibleItems = [];
+      
+      propertyItems.forEach(item => {
+        const location = item.dataset.location;
+        const price = parseInt(item.dataset.price) || 0;
+        
+        const locationMatch = !locationValue || location.includes(locationValue);
+        const priceMatch = price <= priceValue;
+        
+        if (locationMatch && priceMatch) {
+          item.style.display = 'block';
+          visibleItems.push(item);
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Sort visible items
+      const container = document.querySelector('.properties-grid .row');
+      const sortedItems = visibleItems.sort((a, b) => {
+        switch(sortValue) {
+          case 'price-low':
+            return parseInt(a.dataset.price) - parseInt(b.dataset.price);
+          case 'price-high':
+            return parseInt(b.dataset.price) - parseInt(a.dataset.price);
+          case 'name':
+            return a.dataset.name.localeCompare(b.dataset.name);
+          default:
+            return 0;
+        }
+      });
+      
+      // Reorder DOM elements
+      if (container) {
+        sortedItems.forEach(item => {
+          container.appendChild(item);
+        });
+      }
+      
+      // Show/hide no results message
+      const noResults = document.getElementById('noResults');
+      if (visibleItems.length === 0 && !noResults && container) {
+        const message = document.createElement('div');
+        message.id = 'noResults';
+        message.className = 'col-12 text-center py-5';
+        message.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h4>No Properties Found</h4>
+            <p class="text-muted">Try adjusting your search criteria</p>
+            <button class="btn btn-primary" onclick="clearFilters()">
+              <i class="fas fa-refresh me-2"></i>Clear Filters
+            </button>
+          </div>
+        `;
+        container.appendChild(message);
+      } else if (visibleItems.length > 0 && noResults) {
+        noResults.remove();
+      }
+    }
+    
+    // Event listeners (only if elements exist)
+    if (searchBtn) searchBtn.addEventListener('click', filterProperties);
+    if (locationSearch) locationSearch.addEventListener('input', filterProperties);
+    if (priceFilter) priceFilter.addEventListener('change', filterProperties);
+    if (sortBy) sortBy.addEventListener('change', filterProperties);
+    
+    // Clear filters function
+    window.clearFilters = function() {
+      if (locationSearch) locationSearch.value = '';
+      if (priceFilter) priceFilter.value = '';
+      if (sortBy) sortBy.value = 'newest';
+      filterProperties();
+    };
+  });
+  
+  // Favorite toggle functionality (updated for new button class)
+  function toggleFavorite(button, propertyId) {
+  const icon = button.querySelector('i');
+
+  if (icon.classList.contains('fa-thin')) {
+    icon.classList.remove('fa-thin');
+    icon.classList.add('fa-solid');
+    button.classList.add('favorited');
+    showNotification('Added to favorites!', 'success');
+  } else {
+    icon.classList.remove('fa-solid');
+    icon.classList.add('fa-thin');
+    button.classList.remove('favorited');
+    showNotification('Removed from favorites!', 'info');
+  }
+}
+
+  
+  // Notification function (preserved)
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} notification-toast`;
+    notification.innerHTML = `
+      <i class="fas fa-${type === 'success' ? 'check' : 'info'}-circle me-2"></i>
+      ${message}
+    `;
+    
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
+    }, 3000);
+  }
+  
+  // Add slide animations (preserved)
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Property card animations on scroll (preserved)
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+  
+  const propertyObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, observerOptions);
+  
+  document.querySelectorAll('.property-card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = 'all 0.6s ease-out';
+    propertyObserver.observe(card);
+  });
+</script>
+<script src="https://kit.fontawesome.com/7db9990f2d.js" crossorigin="anonymous"></script>
